@@ -16,7 +16,7 @@ Use this skill when the user wants to call you on the phone, set up voice callin
 
 Phone calls to OpenClaw using:
 - **Deepgram Voice Agent API** - STT, TTS, turn-taking, barge-in
-- **Twilio** - Phone number routing
+- **Twilio or Telnyx** - Phone number routing (user's choice)
 - **OpenClaw** - Your AI (via chat completions proxy)
 
 ## Setup Process
@@ -38,13 +38,24 @@ pip install -r requirements.txt
 
 Ask: "What's your Deepgram API key?"
 
-### Step 3: Get Twilio Credentials
+### Step 3: Get Phone Provider Credentials
 
+Ask the user which provider they prefer: **Twilio** or **Telnyx**.
+
+**Option A – Twilio:**
 1. Go to https://www.twilio.com/ and sign up
 2. Copy **Account SID** and **Auth Token** from dashboard
 3. **Phone Numbers** → **Buy a number** with Voice (~$1/month)
 
 Ask: "What's your Twilio phone number, Account SID, and Auth Token?"
+
+**Option B – Telnyx** (cheaper, simpler API):
+1. Go to https://telnyx.com/ and sign up
+2. **Numbers** → **Buy a number** with Voice (~$0.50-$2/month, varies by region)
+3. **API Keys** → Create or copy an API Key
+4. **Account** → **Public Key** → copy the Public Key
+
+Ask: "What's your Telnyx phone number, API Key, and Public Key?"
 
 ### Step 4: Get OpenClaw Gateway Token
 
@@ -62,11 +73,24 @@ If generating new, tell them to add it to `~/.openclaw/openclaw.json` under `gat
 
 ### Step 5: Create .env file
 
-Create `~/deepclaw/.env` with their values:
+Create `~/deepclaw/.env` with their values.
+
+**If using Twilio:**
 ```
 DEEPGRAM_API_KEY=<their_deepgram_key>
+VOICE_PROVIDER=twilio
 TWILIO_ACCOUNT_SID=<their_sid>
 TWILIO_AUTH_TOKEN=<their_token>
+OPENCLAW_GATEWAY_URL=http://127.0.0.1:18789
+OPENCLAW_GATEWAY_TOKEN=<their_gateway_token>
+```
+
+**If using Telnyx:**
+```
+DEEPGRAM_API_KEY=<their_deepgram_key>
+VOICE_PROVIDER=telnyx
+TELNYX_API_KEY=<their_telnyx_api_key>
+TELNYX_PUBLIC_KEY=<their_telnyx_public_key>
 OPENCLAW_GATEWAY_URL=http://127.0.0.1:18789
 OPENCLAW_GATEWAY_TOKEN=<their_gateway_token>
 ```
@@ -98,8 +122,9 @@ ngrok http 8000
 
 Note the HTTPS URL (e.g., `https://abc123.ngrok-free.app`).
 
-### Step 8: Configure Twilio Webhook
+### Step 8: Configure Phone Provider Webhook
 
+**If using Twilio:**
 1. https://console.twilio.com/
 2. **Phone Numbers** → **Active Numbers** → Click their number
 3. **Voice Configuration**:
@@ -107,6 +132,17 @@ Note the HTTPS URL (e.g., `https://abc123.ngrok-free.app`).
    - URL: `https://<ngrok-url>/twilio/incoming`
    - Method: **POST**
 4. Save
+
+**If using Telnyx:**
+1. https://portal.telnyx.com/
+2. **Voice** → **Programmable Voice** → Create a new **Voice API Application**:
+   - **Application Name**: `deepclaw-voice`
+   - **Webhook URL**: `https://<ngrok-url>/telnyx/webhook`
+   - **Webhook API Version**: `API v2`
+3. Click **Create**
+4. **Numbers** → **My Numbers** → Click their number
+5. Under **Voice Settings** → **Connection**: select the `deepclaw-voice` application
+6. Save
 
 ### Step 9: Start Server
 
@@ -117,7 +153,7 @@ python -m deepclaw.voice_agent_server
 
 ### Step 10: Test
 
-Tell them: "Call your Twilio number now!"
+Tell them: "Call your phone number now!"
 
 Watch the server logs for:
 - "Connected to Deepgram Voice Agent API"
@@ -162,12 +198,18 @@ When something goes wrong, check the server logs first. Here's how to diagnose c
 
 **Symptom:** You call, phone hangs up, but no logs appear in the server terminal.
 
-**Cause:** Twilio webhook URL doesn't match your ngrok URL.
+**Cause:** Webhook URL doesn't match your ngrok URL.
 
-**Fix:**
+**Fix (Twilio):**
 1. Check your current ngrok URL in the ngrok terminal
 2. Go to Twilio Console → Phone Numbers → Your Number → Voice Configuration
 3. Make sure the webhook URL matches exactly: `https://<your-ngrok-url>/twilio/incoming`
+4. Save and try again
+
+**Fix (Telnyx):**
+1. Check your current ngrok URL in the ngrok terminal
+2. Go to Telnyx Mission Control → Voice → Programmable Voice → your `deepclaw-voice` app
+3. Make sure the Webhook URL matches exactly: `https://<your-ngrok-url>/telnyx/webhook`
 4. Save and try again
 
 ### "Check your think provider settings" error
@@ -211,10 +253,10 @@ When something goes wrong, check the server logs first. Here's how to diagnose c
 
 **Symptom:** Server responds to curl, ngrok works, but calling from your phone gets immediate disconnect with no logs.
 
-**Cause:** Your carrier may be blocking calls to the Twilio number, or you're dialing wrong.
+**Cause:** Your carrier may be blocking calls to the phone number, or you're dialing wrong.
 
 **Fix:**
-1. Verify you're dialing the exact Twilio number (with country code if needed)
+1. Verify you're dialing the exact phone number (with country code if needed)
 2. Try calling from a different phone
 3. Test with an outbound call from Twilio to you:
    ```python
@@ -230,7 +272,7 @@ When something goes wrong, check the server logs first. Here's how to diagnose c
        }
    )
    ```
-   If this works, the issue is your carrier blocking outbound calls to Twilio.
+   If this works, the issue is your carrier blocking outbound calls to the provider number.
 
 ### OpenClaw returns errors
 
@@ -243,7 +285,7 @@ When something goes wrong, check the server logs first. Here's how to diagnose c
 
 ### ngrok URL keeps changing
 
-**Symptom:** Every time you restart ngrok, you get a new URL and have to update Twilio.
+**Symptom:** Every time you restart ngrok, you get a new URL and have to update your phone provider webhook.
 
 **Fix:** Use a fixed ngrok domain (requires ngrok account):
 ```bash
