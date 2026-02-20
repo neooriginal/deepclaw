@@ -55,9 +55,10 @@ Phone Call → Twilio/Telnyx → deepclaw ←──WebSocket──→ Deepgram V
 The easiest way to set up deepclaw is to let your OpenClaw do it for you:
 
 ```bash
-# Copy the skill to your OpenClaw
+# Install the skill to your OpenClaw
 mkdir -p ~/.openclaw/skills/workspace/deepclaw
-cp skills/deepclaw-voice/SKILL.md ~/.openclaw/skills/workspace/deepclaw/SKILL.md
+curl -fsSL https://raw.githubusercontent.com/neooriginal/deepclaw/main/skills/deepclaw-voice/SKILL.md \
+  -o ~/.openclaw/skills/workspace/deepclaw/SKILL.md
 ```
 
 Then tell your OpenClaw: **"I want to call you on the phone"**
