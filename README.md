@@ -56,14 +56,15 @@ The easiest way to set up deepclaw is to let your OpenClaw do it for you:
 
 ```bash
 # Copy the skill to your OpenClaw
-cp -r skills/deepclaw-voice ~/.openclaw/skills/
+mkdir -p ~/.openclaw/skills/workspace/deepclaw
+cp skills/deepclaw-voice/SKILL.md ~/.openclaw/skills/workspace/deepclaw/SKILL.md
 ```
 
 Then tell your OpenClaw: **"I want to call you on the phone"**
 
 OpenClaw will walk you through:
 - Creating a Deepgram account (free $200 credit)
-- Setting up a Twilio phone number (~$1/month)
+- Setting up a phone number via **Twilio** (~$1/month) or **Telnyx** (~$0.50-$2/month)
 - Configuring everything automatically
 
 ## Manual Setup
@@ -341,3 +342,4 @@ Built with:
 - [Deepgram Aura-2](https://deepgram.com/product/text-to-speech) — Low-latency text-to-speech
 - [OpenClaw](https://github.com/openclaw/openclaw) — Open-source AI assistant
 - [Twilio](https://www.twilio.com/) — Phone infrastructure
+- [Telnyx](https://telnyx.com/) — Phone infrastructure
