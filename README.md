@@ -57,8 +57,7 @@ The easiest way to set up deepclaw is to let your OpenClaw do it for you:
 ```bash
 # Install the skill to your OpenClaw
 mkdir -p ~/.openclaw/skills/workspace/deepclaw
-curl -fsSL https://raw.githubusercontent.com/neooriginal/deepclaw/main/skills/deepclaw-voice/SKILL.md \
-  -o ~/.openclaw/skills/workspace/deepclaw/SKILL.md
+cp skills/deepclaw-voice/SKILL.md ~/.openclaw/skills/workspace/deepclaw/SKILL.md
 ```
 
 Then tell your OpenClaw: **"I want to call you on the phone"**
